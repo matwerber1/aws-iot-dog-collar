@@ -148,3 +148,28 @@ From left-most pin 1 to right-most pin 4:
 * Pin 4 "+5V" -> 3.3v on pi
 
 **Note** - even though the receiver's power pin says "+5V", I connected it to a 3.3V pin on the pi because I read that +5V can damage the GPIO pins on the pi. Not sure how accurate this is, but I wanted to be safe. It didn't seem to affect results. 
+
+## RF Code Mapping
+
+### Byte 4 - Power
+
+The 4th byte of the transmitted bit string represents the power applied to the collar. 
+
+The sound and light modes do not have a power setting and their 4th byte is always ```11111111```. 
+
+The shock and vibrate modes do have a power setting that ranges from 0 to 100 on the remote control. The power level formula is ```desired power = 255 - (decimal value of 4th byte)```.
+
+For example, if we set the collar remote to channel 1, shock mode, power 5 and press the send button, ```rtl_utils -A``` shows that the the full bit string is: 
+```
+01111110 01111111 00011001 11111010 10000001 1
+```
+
+The fourth byte controls power and has a value of ```11111010``` which is the binary representation of the decimal value ```250```. Using the power formula above, we can see:
+
+```
+desired power = 255 - (decimal value of 4th bit string)
+desired power = 255 - 250
+desired power = 5
+```
+
+I reversed engineered the power formula above by simply transmitting each different power setting until a pattern emerged. 
