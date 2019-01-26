@@ -151,6 +151,34 @@ From left-most pin 1 to right-most pin 4:
 
 ## RF Code Mapping
 
+Each signal transmitted by the dog collar remote sends a bit string consisting of four 8-bit bytes that vary depending on the remote settings (channel, mode, power), followed by a '1' check digit. Below is an example: 
+
+```
+01111110 01111111 00011001 11111010 10000001 1
+```
+
+### Byte 1 - Channel and Mode
+
+The first 4 bits of byte 1 specify the channel and the second 4 bits specify the mode. 
+
+**First 4 bits - Channel**
+* ```Channel 1``` = ```0111```
+* ```Channel 2``` = ```0000```
+
+**Second 4 bits - Mode:**
+* ```Beep``` = ```1011```
+* ```Light``` = ```0111```
+* ```Shock``` = ```1110```
+* ```Vibrate``` = ```1101```
+
+For example, if the first byte is ```01110111```, the two 4-bit halves are ```0111``` and ```0111``` which represents ```channel 1``` and ```light mode```, respectively. 
+
+### Byte 2 & 3 - Unknown
+
+Bytes 2nd and 3rd bytes are always ```01111111	00011001```, regardless of the channel, mode, or power selected on the collar remote. 
+
+Perhaps these are unique to the manufacturer? Or perhaps they are unique to the specific remote+collar pair I have? We would need a second identical collar/remote pair to test. 
+
 ### Byte 4 - Power
 
 The 4th byte of the transmitted bit string represents the power applied to the collar. 
