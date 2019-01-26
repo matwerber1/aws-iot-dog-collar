@@ -10,6 +10,18 @@ An AWS DeepLens is used to build and train a model that detects when a dog is ge
 
 When the AWS DeepLens detects bad behavior it instructs a nearby Raspberry Pi ("pi") to send a signal to the dog's collar that triggers a vibration. 
 
+## Status
+
+**Complete**
+* Decode RF signals from dog collar remote
+
+**Next Steps**
+* Successfully transit decoded signals, confirm they trigger the collar
+* Build AWS Lambda + Greengrass solution on pi to transit signals to collar when triggered via MQTT topic on AWS IoT Core
+* Build and train ML model with AWS SageMaker to detect dog on couch
+* Deploy model to AWS DeepLens
+* Configure DeepLens to send vibrate message to pi transmitter when it detects dog on couch
+
 ## Materials
 
 Links provided are to the specific products I used. Generally speaking, any similar products should work; just be sure to match the RF frequency of the collar (e.g. 433 Mhz) with the frequency of the RF transmitter.
