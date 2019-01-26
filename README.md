@@ -123,6 +123,8 @@ Next steps are to capture the bit strings for all of the setting combinations on
 
 The image below shows the wiring of the RF transmitter (left) and RF receiver (right). Note that the RF receiver ultimately wasn't required because I ended up using the RTL-SDR receiver instead. 
 
+There's no requirement to use the same GPIO pins as I did on the pi, so long as you specify the proper pins in your code / utilities. 
+
 ![Raspberry Pi Wiring](images/pi.jpg)
 
 ### RF Transmitter Wiring
@@ -134,7 +136,7 @@ From left-most pin 1 to right-most pin 4:
 * Pin 3 "G" -> ground on pi
 * Pin 4 "AN" -> not used, but I assume this is for an Antenna
 
-### RF Receiver
+### RF Receiver Wiring
 
 This particular RF receiver seemed to have two separate sets of 4 pins each, one on the left and one on the right. In the picture above, you only see the first set of pins as I didn't use/need the second set. 
 
