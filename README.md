@@ -118,3 +118,31 @@ I proceeded to change the mode (sound, light, shock, or vibrate), the channel (1
 At this point, I know that my remote is transmitting an OOK-encoded RF message, the widths & limits above are the paramaters needed to "tune" a signal to my remote/collar combo, and the four 8-bit codes contain all the info needed by the collar.
 
 Next steps are to capture the bit strings for all of the setting combinations on the remote. Once I have those, I can then device a way to programmatically send the same signals out via the Pi + RF transmitter. 
+
+## Pi Wiring
+
+The image below shows the wiring of the RF transmitter (left) and RF receiver (right). Note that the RF receiver ultimately wasn't required because I ended up using the RTL-SDR receiver instead. 
+
+![Raspberry Pi Wiring](images/pi.jpg)
+
+### RF Transmitter Wiring
+
+From left-most pin 1 to right-most pin 4:
+
+* Pin 1 "VCC" -> 3.3V on pi
+* Pin 2 "DA" -> GPIO 17 on pi
+* Pin 3 "G" -> ground on pi
+* Pin 4 "AN" -> not used, but I assume this is for an Antenna
+
+### RF Receiver
+
+This particular RF receiver seemed to have two separate sets of 4 pins each, one on the left and one on the right. In the picture above, you only see the first set of pins as I didn't use/need the second set. 
+
+From left-most pin 1 to right-most pin 4: 
+
+* Pin 1 "GND" -> ground on pi
+* Pin 2 "Data" -> GPIO 23 on pi
+* Pin 3 "DER" -> unknown; seems to be interchangeable with Pin 2
+* Pin 4 "+5V" -> 3.3v on pi
+
+**Note** - even though the receiver's power pin says "+5V", I connected it to a 3.3V pin on the pi because I read that +5V can damage the GPIO pins on the pi. Not sure how accurate this is, but I wanted to be safe. It didn't seem to affect results. 
