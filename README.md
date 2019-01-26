@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Create an AWS-powered IoT dog collar that is triggered when a dog is detected getting into trash or getting on sofa when the owner is not home. 
+Create an AWS-powered IoT dog collar that is triggered to give  safe vibration when the host dog is detected by an AWS DeepLens camera getting into trash or getting on sofa when the owner is not home. 
 
 ## Overview
 
