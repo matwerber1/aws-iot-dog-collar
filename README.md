@@ -151,7 +151,7 @@ From left-most pin 1 to right-most pin 4:
 
 ## RF Code Mapping
 
-Each signal transmitted by the dog collar remote sends a bit string consisting of four 8-bit bytes that vary depending on the remote settings (channel, mode, power), followed by a '1' check digit. Below is an example: 
+Each signal transmitted by the dog collar remote sends a bit string consisting of five 8-bit bytes that vary depending on the remote settings (channel, mode, power), followed by a '1' check digit. Below is an example: 
 
 ```
 01111110 01111111 00011001 11111010 10000001 1
@@ -201,3 +201,35 @@ desired power = 5
 ```
 
 I reversed engineered the power formula above by simply transmitting each different power setting until a pattern emerged. 
+
+### Byte 5 - Mode and Channel
+
+Byte 5 behaves just like byte 1 in that it encodes the mode and channel using the first and last 4 bits, respectively. 
+
+Byte 5 is different from Byte 1 in that Byte 5 first specifies mode followed by channel, whereas Byte 1 specifies these in reverse order. 
+
+Byte 5 is also different in that the codes themselves are not the same. 
+
+**First 4 bits - Mode:**
+* ```Beep``` = ```0010```
+* ```Light``` = ```0001```
+* ```Shock``` = ```1000```
+* ```Vibrate``` = ```0100```
+
+**Second 4 bits - Channel**
+* ```Channel 1``` = ```0001```
+* ```Channel 2``` = ```1111```
+
+### Bit String Example
+
+Putting all of the bit decoding info together, let's look at an example: 
+
+```
+00001110 01111111 00011001	11110101 10001111 1
+```
+
+The first byte ```00001110``` tells us ```channel 2``` (first 4 bits = ```0000```) ```shock``` mode (second 4 bits is ```1110```).
+
+As expected, the second and third bytes are always ```01111111 00011001```.
+
+The fourth byte is ```11110101``` which [translates](https://www.rapidtables.com/convert/number/decimal-to-binary.html?x=245) to the decimal ```245```. Using our power formula of ```power = 255 - decimal value of 4th byte```, we can see that ```power = 255 - 245```, i.e. ```power = 10```. 
