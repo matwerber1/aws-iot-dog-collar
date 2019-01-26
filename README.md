@@ -127,7 +127,7 @@ I proceeded to change the mode (sound, light, shock, or vibrate), the channel (1
 4. The sync_width was consistenty at 1592 (+/- ~5)
 5. For a given setting combination on the remote, the decoded bit strings were identical
 
-At this point, I know that my remote is transmitting an OOK-encoded RF message, the widths & limits above are the paramaters needed to "tune" a signal to my remote/collar combo, and the four 8-bit codes contain all the info needed by the collar.
+At this point, I know that my remote is transmitting an OOK-encoded RF message, the widths & limits above are the paramaters needed to "tune" a signal to my remote/collar combo, and the five 8-bit codes contain all the info needed by the collar.
 
 Next steps are to capture the bit strings for all of the setting combinations on the remote. Once I have those, I can then device a way to programmatically send the same signals out via the Pi + RF transmitter. 
 
