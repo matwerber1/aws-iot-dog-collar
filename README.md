@@ -44,7 +44,7 @@ Going in to this, I had zero experience with RF transmission and a very rudiment
 
 Even after this project, I still have a very basic understanding. That said, my hope is this document will be a helpful learning tool for someone that, like me, has little to no RF experience. 
 
-### Signal Decoding
+### Signal Decoding - rtl_433 on Pi, simple RF receiver
 
 By modifying (aka modulating) signal characteristics like frequency and amplitude, you can encode information in radio frequency. There are a variety of ways to encode signals and they vary depending on vendor and use case.
 
@@ -240,8 +240,34 @@ Putting all of the bit decoding info together, let's look at an example:
 00001110 01111111 00011001	11110101 10001111 1
 ```
 
-The first byte ```00001110``` tells us ```channel 2``` (first 4 bits = ```0000```) ```shock``` mode (second 4 bits is ```1110```).
+The first byte ```00001110``` tells us ```channel 2``` (first 4 bits = ```0000```), ```shock``` mode (second 4 bits is ```1110```).
 
 As expected, the second and third bytes are always ```01111111 00011001```.
 
 The fourth byte is ```11110101``` which [translates](https://www.rapidtables.com/convert/number/decimal-to-binary.html?x=245) to the decimal ```245```. Using our power formula of ```power = 255 - decimal value of 4th byte```, we can see that ```power = 255 - 245```, i.e. ```power = 10```. 
+
+The fifth byte is ```10001111``` tells us ```shock``` mode (first 4 bits = ```1000```), ```channel 2``` (second 4 bits = ```1111```).
+
+### Signal Replay - Python script with Pi, simple RF transmitter
+
+I tried to re-transmit the signals captured with the simple RF transmitter, without luck.
+
+I plan to add more detail to this section, but for now, let's say I concluded one of two possibilities:
+
+1. I'm re-transmitting incorrectly ([pi-transmit-gpio.py](./pi-transmit-gpio.py))
+
+2. The rtl_433 decode we did earlier performed some sort of secret sauce decoding before displaying the 5-byte sequences to me; thus, I can't simply re-transmit as shown. I have to transmit the raw signal (whatever that may be)
+
+At this point, I attemped to use the SDR radio with my Macbook to see if it showed anything different... which it did. I now suspected that more work was needed to truly figure out the proper signal to decode and send. See the next section for learnings with SDR. 
+
+### Signal Decoding - SDR USB Radio + MacBook + URH (Ultimate Radio Hacker)
+
+A bit of searching revealed that [Ultimate Radio Hacker (URH)](https://github.com/jopohl/urh) is a popular and powerful tool for decoding device radio signals. 
+
+First, I installed URH on my Macbook. Note that this took awhile - I received a vague error about a dependency, OpenBLAS failing to install during the process. Eventually I learned that (at the time of this writing, Jan 2019), the latest version of xtools/xcode was the issue. I installed a prior version (9x, I think) and then URH installed.
+
+URH requires its own deep dive and there are already docs on line, so I will gloss over many steps. 
+
+First things first, I started URH up, chose **Record Signal**, set the collar remote to Channel 1, Shock Mode, and proceeded to transmit each of the 100 power settings. When done, I saved the capture as a file for subsequent analysis:
+
+![Recording signal with URH](./images/urh-record.png)
