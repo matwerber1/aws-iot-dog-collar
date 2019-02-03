@@ -12,11 +12,13 @@ When the AWS DeepLens detects bad behavior it instructs a nearby Raspberry Pi ("
 
 ## Status
 
-**Complete**
+### In Process
+
 * Decode RF signals from dog collar remote
 
-**Next Steps**
-* Successfully transit decoded signals, confirm they trigger the collar
+### Next Steps
+
+* Successfully transmit decoded signals, confirm they trigger the collar
 * Build AWS Lambda + Greengrass solution on pi to transit signals to collar when triggered via MQTT topic on AWS IoT Core
 * Build and train ML model with AWS SageMaker to detect dog on couch
 * Deploy model to AWS DeepLens
