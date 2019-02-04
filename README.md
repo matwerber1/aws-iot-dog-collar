@@ -233,3 +233,7 @@ python transmit.py --channel 1 --mode 'shock' --power 100
 **\#Winning:**
 
 ![Transmitting signal](./images/urh-transmit.jpg)
+
+I want to point out... the screenshot above shows power level 100 which had an **audible** sound during testing...
+
+I also tested power level 1, which had no sound, on my leg... and it definitely kind of hurt. Nothing terrible, but it was more intense than say a 9V battery touched to the tongue. Suffice to say, I will **not** be using the shock mode on my doggo. We will ne sticking to beep and/or vibrate mode.
