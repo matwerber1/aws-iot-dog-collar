@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Create an AWS-powered IoT dog collar that is triggered to give  safe vibration when the host dog is detected by an AWS DeepLens camera getting into trash or getting on sofa when the owner is not home. 
+Create an AWS-powered IoT dog collar that is triggered to give  safe vibration when the host dog is detected by an AWS DeepLens camera getting into trash or getting on sofa when the owner is not home.
 
 ## Overview
 
-An AWS DeepLens is used to build and train a model that detects when a dog is getting into the trash or getting on a sofa. These, or other trained triggers, are herein referred to as "bad behavior". 
+An AWS DeepLens is used to build and train a model that detects when a dog is getting into the trash or getting on a sofa. These, or other trained triggers, are herein referred to as "bad behavior".
 
-When the AWS DeepLens detects bad behavior it instructs a nearby Raspberry Pi ("pi") to send a signal to the dog's collar that triggers a vibration. 
+When the AWS DeepLens detects bad behavior it instructs a nearby Raspberry Pi ("pi") to send a signal to the dog's collar that triggers a vibration.
 
 ## Status
 
@@ -28,15 +28,17 @@ When the AWS DeepLens detects bad behavior it instructs a nearby Raspberry Pi ("
 
 Links provided are to the specific products I used. Generally speaking, any similar products should work; just be sure to match the RF frequency of the collar (e.g. 433 Mhz) with the frequency of the RF transmitter.
 
-1. [RTL-SDR Radio](https://www.amazon.com/gp/product/B01GDN1T4S/ref=ppx_yo_dt_b_asin_title_o01__o00_s01?ie=UTF8&psc=1)
+1. [433 Mhz Remote-Controlled Dog Vibration and/or Shock Collar](https://www.amazon.com/gp/product/B00MQ1RBAS/ref=ppx_yo_dt_b_asin_title_o02__o00_s00?ie=UTF8&psc=1)
 
-2. [433 Mhz Remote-Controlled Dog Vibration and/or Shock Collar](https://www.amazon.com/gp/product/B00MQ1RBAS/ref=ppx_yo_dt_b_asin_title_o02__o00_s00?ie=UTF8&psc=1)
+2. [RTL-SDR Radio](https://www.amazon.com/gp/product/B01GDN1T4S/ref=ppx_yo_dt_b_asin_title_o01__o00_s01?ie=UTF8&psc=1) - a "software-defined radio (SDR)" receiver with antenna; let's you tune to a wide range of radio signals (not just 433 MHZ) with software like [CubicSDR](https://cubicsdr.com) and record and decode signals with software like [Universal Radio Hacker(URH)](https://github.com/jopohl/urh).
 
-3. [433 Mhz RF Transmitter](https://www.amazon.com/gp/product/B00HEDRHG6/ref=ppx_yo_dt_b_asin_title_o03__o00_s00?ie=UTF8&psc=1)
+3. [433 Mhz RF Transmitter](https://www.amazon.com/gp/product/B00HEDRHG6/ref=ppx_yo_dt_b_asin_title_o03__o00_s00?ie=UTF8&psc=1) - transmit signals to the collar. Note - this comes with a 433 MHZ receiver that is not needed in this project but still nice to have. 
 
 4. [Raspberri Pi 3](https://www.amazon.com/gp/product/B01CD5VC92/ref=oh_aui_search_asin_title?ie=UTF8&psc=1)
 
 5. Wires to connect Raspberry Pi to RF transmitter
+
+Note - To receive signals from the collar's remote, you could either use a simple RF receiver attached to your Pi or a more capable SDR antenna attached to your Pi (or personal computer). I initially attempted to use an RF receiver but had difficulty detecting and decoding the collar's signals (see earlier commits on the README.md if you're curious).
 
 ## RF Wiring
 
@@ -64,15 +66,27 @@ From left-most pin 1 to right-most pin 4:
 * Pin 3 "DER" -> unknown; seems to be interchangeable with Pin 2
 * Pin 4 "+5V" -> 3.3v on pi
 
-**Note** - even though the receiver's power pin says "+5V", I connected it to a 3.3V pin on the pi because I read that +5V can damage the GPIO pins on the pi. Not sure how accurate this is, but I wanted to be safe. It didn't seem to affect results. 
+**Note** - even though the receiver's power pin says "+5V", I connected it to a 3.3V pin on the pi because I read that +5V can damage the GPIO pins on the pi. Not sure how accurate this is, but I wanted to be safe. It didn't seem to affect results.
 
 ## Signal Decoding
 
-I used [Ultimate Radio Hacker (URH)](https://github.com/jopohl/urh), a popular and powerful tool for decoding the collar's radio signals. URH requires its own deep dive and there are already docs on line, so I will gloss over many steps.
+The RTL-SDR USB dongle was plugged into my Macbook and then  [Universal Radio Hacker (URH)](https://github.com/jopohl/urh) was started up to capture and decode the remote's signals.
+
+URH is a common and powerful tool for decoding radio signals...  If you're new to it, there's a bit of a learning curve. There are online docs and [YouTube videos](https://www.youtube.com/channel/UCqIWuCQfX00XHFiwTENI79A/videos) that can walk you through install and usage. We will only gloss over usage, below.
 
 ### Record Signal
 
-First things first, I started URH up, chose **Record Signal**, set the collar remote to Channel 1, Shock Mode, and proceeded to transmit each of the 100 power settings. When done, I saved the capture as a file for subsequent analysis:
+First things first: plug in your SDR USB dongle, start up UHR, choose  **Record Signal**, and set record frequency to 433.920M.
+
+On the collar remote, select Channel 1, Shock Mode, power level 0.
+
+In URH, press Start and wait a moment for the status to show recording is in progress. Then, quickly press the transmit button on the collar remote.
+
+If you want to capture more meaningful data, incrementally increase the power level by 1 on the remote, press the transmit button, and repeat until you have captured at least ~20 signals.
+
+I would suggest recording different modes and channels to different files. By having them in different files it will make it easier to later distinguish which bits correspond with mode vs. channel vs. power. 
+
+When done, I saved the capture(s) as file(s) for subsequent analysis:
 
 ![Recording signal with URH](./images/urh-record.png)
 
