@@ -139,17 +139,17 @@ I suspected that each "000" represented a 0, each "111" represented a "1", and a
 
  What exactly did this mean? I wasn't sure, but I used this info to apply an encoding that (a) ignored the first 8 bits, (b) removed the "01" separator signal, and (c) compressed 000 to 0 and 111 to 1.
 
-Skipping the first 8 bits, which I noticed were always '11111111' and seemed to be the only section that didn't confirm to the '11101' or '00001' pattern:
+Skipping the first 8 bits, which I noticed were always '11111111' and seemed to be the only section that didn't conform to the '11101' or '00001' pattern:
 
 ![Analyzing the signal with URH (06)](./images/urh-analyze-06.png)
 
 Remove the '01' that seems to separate all of the remaining 000 and 111 patterns:
 
-![Analyzing the signal with URH (06)](./images/urh-analyze-07.png)
+![Analyzing the signal with URH (07)](./images/urh-analyze-07.png)
 
 Replace '000' with '0' and '111' with '1':
 
-![Analyzing the signal with URH (06)](./images/urh-analyze-08.png)
+![Analyzing the signal with URH (08)](./images/urh-analyze-08.png)
 
 To recap all of the above, let's start with an original 213 signal for Channel 1, shock mode, power 0, using a bit length of 200 and ASK modulation mode with an NRZ decoding:
 
@@ -199,9 +199,13 @@ My observations are below:
 | 34 to 37                      | 4      | Mode: beep    = '1101' light   = '1110' shock   = '0111' vibrate = '1011'                                                                           |
 | 38 to 41                      | 4      | Channel: 1 = '1110' 2 = '0000'                                                                                                                      |
 
-Again, the above took a fair bit of staring at a screen before it started to make sense. 
+Again, the above took a fair bit of staring at a screen before it started to make sense.
 
-Was it **truly** needed for this project? No... but I wanted to try to decode as much as I could. Could further decoding be made? Sure, probably... who knows what bits 10 to 25 really mean? not me. But, its enough to work.
+URH has a **label** feature on the analysis tab that allows you to color-code different sequences of bits and give them meaningful labels. As an example, this screenshot shows the bits with labeling based on the table above:
+
+![Analyzing the signal with URH (09)](./images/urh-analyze-09.png)
+
+Was it **truly** needed for this project? No... but I wanted to try to decode as much as I could to make the transmission script as easy as possible. Could further decoding be made? Sure, probably... who knows what bits 10 to 25 really mean? not me. But, we have enough to get things working.
 
 ## Transmitting the Signal
 
@@ -210,6 +214,6 @@ We also know that our remote uses a simple NRZ transmission protocol, meaning th
 
 In other words, to send a 1 or 0, we simply need to apply a voltage or apply no voltage, respectively, to our 433 Mhz transmitter for 200us.
 
-The [transmit.py](./transmit.py) script takes an input of channel, mode, and power, converts that to the decoded 41-bit string, then passes it through our encoding algorithm (i.e. add carrier signal of "01", expand 0 to 000 and 1 to 111, and add 11111111 to the beginning of the string) to arrive at our 213 bit encoded message. 
+The [transmit.py](./transmit.py) script takes an input of channel, mode, and power, converts that to the decoded 41-bit string, then passes it through our encoding algorithm (i.e. add carrier signal of "01", expand 0 to 000 and 1 to 111, and add 11111111 to the beginning of the string) to arrive at our 213 bit encoded message.
 
 The script then either applies a voltage of 3.3V or 0V to the data pin of the RF transmitter for 200us for each 1 or 0, respectively, that must be sent.
