@@ -38,106 +38,9 @@ Links provided are to the specific products I used. Generally speaking, any simi
 
 5. Wires to connect Raspberry Pi to RF transmitter
 
-## Learning
+## RF Wiring
 
-### Radio Transmission Overview
-
-Going in to this, I had zero experience with RF transmission and a very rudimentary understanding of sound waves in general. For example, I knew the difference between frequency and amplitude modulation and understood conceptually how they could be used to encode a signal, but I had no idea of how things are done in practice. 
-
-Even after this project, I still have a very basic understanding. That said, my hope is this document will be a helpful learning tool for someone that, like me, has little to no RF experience. 
-
-### Signal Decoding - rtl_433 on Pi, simple RF receiver
-
-By modifying (aka modulating) signal characteristics like frequency and amplitude, you can encode information in radio frequency. There are a variety of ways to encode signals and they vary depending on vendor and use case.
-
-To properly decode (aka demodulate) an RF signal and make it usable, you need to know the encoding method used in the transmission. 
-
-If you have a simple RF Receiver [(like this one)](https://www.amazon.com/gp/product/B00HEDRHG6/ref=ppx_yo_dt_b_asin_title_o03__o00_s00?ie=UTF8&psc=1), Google searches such as "decode 433 Mhz signal with Raspberry Pi" will turn up numerous easy-to-follow walkthroughs [(like this one)](https://www.princetronics.com/how-to-read-433-mhz-codes-w-raspberry-pi-433-mhz-receiver/).
-
-The RF walkthroughs above typically use one of handful of popular Python RF sniffer libraries, such as ninjablocks' [433Utils](https://github.com/ninjablocks/433Utils), to decode transmitted signals. 
-
-After wiring my Pi to the simple RF transmitter linked above, I tried and repeatedly failed to pick up any signal from my dog collar's remote. I tested quite a few libraries/sniffers online and none were successful. Full disclosure, this could have been user error. 
-
-I used a graphical utility on the Pi called [Piscope](http://abyz.me.uk/rpi/pigpio/piscope.html) to visualize activity on the RF receiver. Sure enough, I could see a very obvious signal appearing when buttons were pressed on the dog collar.
-
-I now suspected that the remote was using an encoding that wasn't supported by the sniffer libraries I had tested. I set about to Googling and learned:
-1. Most 433 Mhz devices use simple encoding methods that are addressed by the popular libraries I was using. 
-
-2. Some 433 Mhz devices use more complicated encoding. 
-
-3. There are USB RF receivers that are more capable than the simple RF receiver circuit I was originally using and that appeared to have more robust decoding libraries & tools available. 
-
-The collar remote supported 4 settings (vibrate, noise, shock, and turn on a light), different levels (0 - 100) for shock level, and two separate channels (for up to 2 dogs/collars from a single remote). This further supported the idea that the remote had a more complicated encodingl
-
-To test this theory, I ordered [a very basic three-button garage door remote](https://www.amazon.com/gp/product/B07C11TY2X/ref=ppx_od_dt_b_asin_title_o00_s01?ie=UTF8&psc=1) with the hope that the previous RF sniffers would pick it up. Sure enough, they immediately decoded the signal when the garage remote buttons were pressed. 
-
-I therefore ordered an SDR radio with the hopes that the related utilities found online could capture my collar's signal.
-
-Once the SDR arrived I used mernanan's [rtl_433](https://github.com/merbanan/rtl_433) utility in default receive mode which uses the first device found and listens at 433.92 MHz at a 250k sample rate:
-
-```
-$ rtl_433
-```
-
-Just like the simple 433 Mhz receiver with the Pi, the SDR receiver with rtl_433 detected the garage door opener but failed to detect the collar remote. 
-
-I then skimmed the rtl_433 readme and saw the following option that caught my attention: 
-
-```sh
-# Enable pulse analyzer. Summarizes the timings of pulses, gaps, and periods. Can be used with -R 0 to disable decoders.
-rtl_433 -A
-```
-
-"Pulse" got me thinking... when I hold down the transmit button on the dog remote, the dog collar repeatedly triggers whatever mode the transmitter is set to. E.g. it will continously beep if on the audio mode.
-
-I ran the ```rtl_433 -A``` command, pressed the dog collar button, and saw this beatuiful result: 
-
-```
-Detected OOK package	2019-01-26 15:52:59
-Analyzing pulses...
-Total count:  126,  width: 159.09 ms		(39773 S)
-Pulse width distribution:
- [ 0] count:    3,  width: 1576 us [1568;1588]	( 394 S)
- [ 1] count:   57,  width:  796 us [796;804]	( 199 S)
- [ 2] count:   66,  width:  284 us [280;292]	(  71 S)
-Gap width distribution:
- [ 0] count:   66,  width:  752 us [752;764]	( 188 S)
- [ 1] count:   57,  width:  240 us [236;252]	(  60 S)
- [ 2] count:    2,  width: 13164 us [13164;13164]	(3291 S)
-Pulse period distribution:
- [ 0] count:    3,  width: 2328 us [2320;2344]	( 582 S)
- [ 1] count:  120,  width: 1040 us [1036;1048]	( 260 S)
- [ 2] count:    2,  width: 13448 us [13448;13448]	(3362 S)
-Level estimates [high, low]:  15929,     13
-RSSI: -0.1 dB SNR: 30.6 dB Noise: -31.0 dB
-Frequency offsets [F1, F2]:   12426,      0	(+47.4 kHz, +0.0 kHz)
-Guessing modulation: Pulse Width Modulation with sync/delimiter
-Attempting demodulation... short_width: 284, long_width: 796, reset_limit: 13168, sync_width: 1576
-Use a flex decoder with -X 'n=name,m=OOK_PWM,s=284,l=796,r=13168,g=0,t=0,y=1576'
-pulse_demod_pwm(): Analyzer Device 
-bitbuffer:: Number of rows: 3 
-[00] {41} 7e 7f 19 d0 81 80 : 01111110 01111111 00011001 11010000 10000001 1
-[01] {41} 7e 7f 19 d0 81 80 : 01111110 01111111 00011001 11010000 10000001 1
-[02] {41} 7e 7f 19 d0 81 80 : 01111110 01111111 00011001 11010000 10000001 1
-```
-
-I proceeded to change the mode (sound, light, shock, or vibrate), the channel (1 or 2), and the level of shock and made the following observations: 
-
-1. The short_width was consistently at 280 (+/- ~5)
-2. The long_width was consistently at 796 (+/- ~5)
-3. The reset_limit was consistently at 13192 (+/- ~20)
-4. The sync_width was consistenty at 1592 (+/- ~5)
-5. For a given setting combination on the remote, the decoded bit strings were identical
-
-At this point, I know that my remote is transmitting an OOK-encoded RF message, the widths & limits above are the paramaters needed to "tune" a signal to my remote/collar combo, and the five 8-bit codes contain all the info needed by the collar.
-
-Next steps are to capture the bit strings for all of the setting combinations on the remote. Once I have those, I can then device a way to programmatically send the same signals out via the Pi + RF transmitter. 
-
-## Pi Wiring
-
-The image below shows the wiring of the RF transmitter (left) and RF receiver (right). Note that the RF receiver ultimately wasn't required because I ended up using the RTL-SDR receiver instead. 
-
-There's no requirement to use the same GPIO pins as I did on the pi, so long as you specify the proper pins in your code / utilities. 
+Wiring for both the RF transmitter (left) and RF receiver (right) is below, though the receiver is not needed since we will instead use an RTL-SDR antenna:
 
 ![Raspberry Pi Wiring](images/pi.jpg)
 
@@ -163,113 +66,151 @@ From left-most pin 1 to right-most pin 4:
 
 **Note** - even though the receiver's power pin says "+5V", I connected it to a 3.3V pin on the pi because I read that +5V can damage the GPIO pins on the pi. Not sure how accurate this is, but I wanted to be safe. It didn't seem to affect results. 
 
-## RF Code Mapping
+## Signal Decoding
 
-Each signal transmitted by the dog collar remote sends a bit string consisting of five 8-bit bytes that vary depending on the remote settings (channel, mode, power), followed by a '1' check digit. Below is an example: 
+I used [Ultimate Radio Hacker (URH)](https://github.com/jopohl/urh), a popular and powerful tool for decoding the collar's radio signals. URH requires its own deep dive and there are already docs on line, so I will gloss over many steps.
 
-```
-01111110 01111111 00011001 11111010 10000001 1
-```
-
-### Byte 1 - Channel and Mode
-
-The first 4 bits of byte 1 specify the channel and the second 4 bits specify the mode. 
-
-**First 4 bits - Channel**
-* ```Channel 1``` = ```0111```
-* ```Channel 2``` = ```0000```
-
-**Second 4 bits - Mode:**
-* ```Beep``` = ```1011```
-* ```Light``` = ```0111```
-* ```Shock``` = ```1110```
-* ```Vibrate``` = ```1101```
-
-For example, if the first byte is ```01110111```, the two 4-bit halves are ```0111``` and ```0111``` which represents ```channel 1``` and ```light mode```, respectively. 
-
-### Byte 2 & 3 - Unknown
-
-Bytes 2nd and 3rd bytes are always ```01111111	00011001```, regardless of the channel, mode, or power selected on the collar remote. 
-
-Perhaps these are unique to the manufacturer? Or perhaps they are unique to the specific remote+collar pair I have? We would need a second identical collar/remote pair to test. 
-
-### Byte 4 - Power
-
-The 4th byte of the transmitted bit string represents the power applied to the collar. 
-
-The sound and light modes do not have a power setting and their 4th byte is always ```11111111```. 
-
-The shock and vibrate modes do have a power setting that ranges from 0 to 100 on the remote control. The power level formula is ```desired power = 255 - (decimal value of 4th byte)```.
-
-For example, if we set the collar remote to channel 1, shock mode, power 5 and press the send button, ```rtl_utils -A``` shows that the the full bit string is: 
-```
-01111110 01111111 00011001 11111010 10000001 1
-```
-
-The fourth byte controls power and has a value of ```11111010``` which is the binary representation of the decimal value ```250```. Using the power formula above, we can see:
-
-```
-desired power = 255 - (decimal value of 4th bit string)
-desired power = 255 - 250
-desired power = 5
-```
-
-I reversed engineered the power formula above by simply transmitting each different power setting until a pattern emerged. 
-
-### Byte 5 - Mode and Channel
-
-Byte 5 behaves just like byte 1 in that it encodes the mode and channel using the first and last 4 bits, respectively. 
-
-Byte 5 is different from Byte 1 in that Byte 5 first specifies mode followed by channel, whereas Byte 1 specifies these in reverse order. 
-
-Byte 5 is also different in that the codes themselves are not the same. 
-
-**First 4 bits - Mode:**
-* ```Beep``` = ```0010```
-* ```Light``` = ```0001```
-* ```Shock``` = ```1000```
-* ```Vibrate``` = ```0100```
-
-**Second 4 bits - Channel**
-* ```Channel 1``` = ```0001```
-* ```Channel 2``` = ```1111```
-
-### Bit String Example
-
-Putting all of the bit decoding info together, let's look at an example: 
-
-```
-00001110 01111111 00011001	11110101 10001111 1
-```
-
-The first byte ```00001110``` tells us ```channel 2``` (first 4 bits = ```0000```), ```shock``` mode (second 4 bits is ```1110```).
-
-As expected, the second and third bytes are always ```01111111 00011001```.
-
-The fourth byte is ```11110101``` which [translates](https://www.rapidtables.com/convert/number/decimal-to-binary.html?x=245) to the decimal ```245```. Using our power formula of ```power = 255 - decimal value of 4th byte```, we can see that ```power = 255 - 245```, i.e. ```power = 10```. 
-
-The fifth byte is ```10001111``` tells us ```shock``` mode (first 4 bits = ```1000```), ```channel 2``` (second 4 bits = ```1111```).
-
-### Signal Replay - Python script with Pi, simple RF transmitter
-
-I tried to re-transmit the signals captured with the simple RF transmitter, without luck.
-
-I plan to add more detail to this section, but for now, let's say I concluded one of two possibilities:
-
-1. I'm re-transmitting incorrectly ([pi-transmit-gpio.py](./pi-transmit-gpio.py))
-
-2. The rtl_433 decode we did earlier performed some sort of secret sauce decoding before displaying the 5-byte sequences to me; thus, I can't simply re-transmit as shown. I have to transmit the raw signal (whatever that may be)
-
-At this point, I attemped to use the SDR radio with my Macbook to see if it showed anything different... which it did. I now suspected that more work was needed to truly figure out the proper signal to decode and send. See the next section for learnings with SDR. 
-
-### Signal Decoding - SDR USB Radio + MacBook + URH (Ultimate Radio Hacker)
-
-A bit of searching revealed that [Ultimate Radio Hacker (URH)](https://github.com/jopohl/urh) is a popular and powerful tool for decoding device radio signals. 
-
-First, I installed URH on my Macbook. Note that this took awhile - I received a vague error about a dependency, OpenBLAS failing to install during the process. Eventually I learned that (at the time of this writing, Jan 2019), the latest version of xtools/xcode was the issue. I installed a prior version (9x, I think) and then URH installed.
-
-URH requires its own deep dive and there are already docs on line, so I will gloss over many steps. 
+### Record Signal
 
 First things first, I started URH up, chose **Record Signal**, set the collar remote to Channel 1, Shock Mode, and proceeded to transmit each of the 100 power settings. When done, I saved the capture as a file for subsequent analysis:
 
 ![Recording signal with URH](./images/urh-record.png)
+
+Each set of two to three adjacent black bars corresponded with each of the different power settings I transmitted on the remote, since a single button on the remote sends a burst of two to three identical messages.
+
+### Interpretating the Signal
+
+The nest step is to move to the **Interpretation** window in URH. Here, you can edit various settings to tell URH how your 1s and 0s are encoded in the signal. Refer to online docs & videos for detail. I found that setting the modulation to ASK and clicking Autodetect was all that was needed. (Note, later analysis is what really gave me confidence that autodetect was correct):
+
+![Interpreting the signal with URH](./images/urh-interpret.png)
+
+Note that the interpret tab will not directly tell you whether the settings are right or wrong. That being said, the online videos are solid at giving a foundational understanding to help you along. There are also a few tips in the **Analysis** section below that can help you verify things are correct.
+
+## Analyzing the Signal
+
+On the analysis tab you will see a grid containing 1s and 0s. 
+
+![Analyzing the signal with URH (01)](./images/urh-analyze-01.png)
+
+Each row represents URH's detection of a separate signal and each column represents a bit (1 or 0) within a given signal.
+
+The **Interpretation Settings** you chose on the previous screen (e.g. modulation type, bit length, etc.) are one of two key things that will determine the contents of the grid.
+
+The other key setting that determines the grid content is the **Configure Decoding**:
+
+![Analyzing the signal with URH (01)](./images/urh-analyze-02.png)
+
+In simple terms, your decoding method (if any) translates raw patterns of  1s and 0s from your captured signal into 1s and 0s that represent your intended message.
+
+I do not know enough about RF to be able to explain different encoding types and the reasons for their use. If you are curious, here are some starter articles:
+
+* [Non-return-to-zero Encoding](https://en.wikipedia.org/wiki/Non-return-to-zero)
+* [Manchester Data Encoding for Radio Communications](https://www.maximintegrated.com/en/app-notes/index.mvp/id/3435)
+
+Anyway, a key thing I noticed is that URH will tell you the error percentage, if any, that your selected decoding method has when applied to one or more signals you highlight in the analysis grid.
+
+For example, the image below shows a 0% error rate for the selected rows with NRZ decoding:
+
+![Analyzing the signal with URH (03)](./images/urh-analyze-03.png)
+
+When I switch the encoding to Manchester I, notice that the error rate jumps up to ~54%: 
+
+![Analyzing the signal with URH (04)](./images/urh-analyze-04.png)
+
+If you have the right settings, your error rate should be very low. With me, my error rate was always 0%, but I say "very low" simply because I haven't tested other devices and I imagine its possible some devices/messages/encoding might be subject to occasional error or random interference.
+
+### Signal Deep Dive
+
+I'll save you some reading and say that if I re-transmit the NRZ-decoded signals with my Pi, they work and activate the collar.
+
+This section talks about further analysis of the signal. Specifically, figuring out what each section of those 213-character bit strings means so that I can programmatically generate codes rather than have to record every possible button press and embed within a script. Now, if I had a simple device that only had a few possible combinations, that wouldn't be a problem... but since this remote has 2 channels, 4 modes, and 0 to 100 power settings (for two modes), it has approximately ~400 different code combinations.
+
+First things first, I looked at the raw 213-character codes for Channel 1, Shock Mode, for each power setting 0 to 100.
+
+I noticed that most of the codes stayed the same except for one large section towards the end that seemed to change systematically with each key press.
+
+**Pro Tip!** Enable the **Mark diffs in protocol** checkbox (left side) to highlight any bits that change from the previous signal in red. This makes it much easier to see differences, as shown below: 
+
+![Analyzing the signal with URH (05)](./images/urh-analyze-05.png)
+
+**The red differences above caused a pattern to jump out!** I noticed that, except for the first 8 bits of every signal, the remaining 205 bits were all patterns of 00001 or 11101!
+
+I suspected that each "000" represented a 0, each "111" represented a "1", and a "separator" of "01" between each 000 or 111 code.
+
+ What exactly did this mean? I wasn't sure, but I used this info to apply an encoding that (a) ignored the first 8 bits, (b) removed the "01" separator signal, and (c) compressed 000 to 0 and 111 to 1.
+
+Skipping the first 8 bits, which I noticed were always '11111111' and seemed to be the only section that didn't confirm to the '11101' or '00001' pattern:
+
+![Analyzing the signal with URH (06)](./images/urh-analyze-06.png)
+
+Remove the '01' that seems to separate all of the remaining 000 and 111 patterns:
+
+![Analyzing the signal with URH (06)](./images/urh-analyze-07.png)
+
+Replace '000' with '0' and '111' with '1':
+
+![Analyzing the signal with URH (06)](./images/urh-analyze-08.png)
+
+To recap all of the above, let's start with an original 213 signal for Channel 1, shock mode, power 0, using a bit length of 200 and ASK modulation mode with an NRZ decoding:
+
+```sh
+111111110000111101000010000100001000010000100001111011110100001000010000100001000010000100001111011110111101000010000111101111010000100001000010000100001000010000100001000010000111101111011110111101111011110100001
+```
+
+Below is the same code as above with a space added after the first 8 bits and after every 5th subsequent bit, just to make my earlier observations easier to see:
+
+```sh
+11111111 00001 11101 00001 00001 00001 00001 00001 00001 11101 11101 00001 00001 00001 00001 00001 00001 00001 11101 11101 11101 00001 00001 11101 11101 00001 00001 00001 00001 00001 00001 00001 00001 00001 00001 11101 11101 11101 11101 11101 11101 00001
+```
+
+Per above, we can see that apart from the first 8 bits, the remaining bits are either sequences of "00001" or "11101".
+
+Referring back to our decode steps earlier, we are left with the following if we ignore the first 8 bits: 
+
+```sh
+00001 11101 00001 00001 00001 00001 00001 00001 11101 11101 00001 00001 00001 00001 00001 00001 00001 11101 11101 11101 00001 00001 11101 11101 00001 00001 00001 00001 00001 00001 00001 00001 00001 00001 11101 11101 11101 11101 11101 11101 00001
+```
+
+The "01" trailing each of the remaining 5 bit sequences seems to be some sort of meaningless separator, so we strip it using the **Remove Carrier** decoding function: 
+
+```sh
+000 111 000 000 000 000 000 000 111 111 000 000 000 000 000 000 000 111 111 111 000 000 111 111 000 000 000 000 000 000 000 000 000 000 111 111 111 111 111 111 000
+```
+
+And now we use the **Remove Redundancy** decoding function to replace 000 with 0 and 111 with 1: 
+
+```sh
+0 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 1 1 0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 0
+```
+
+OK, so we've decoded our message from a long 213 bit string to a 41 bit string. **So what????**
+
+Well, on the surface, this doesn't mean anything particularly interesting. But, what I then did was proceed to systematically record the majority of button presses from the collar remote, apply the decoding above (easily, with URH), and view the results with differences marked in red. Long story short, patterns emerged... I noticed that certain bits changed when the remote's channel, mode, and/or power changed, and that certain bits never changed.
+
+My observations are below:
+
+| Bit Position (after decoding) | Length | Meaning                                                                                                                                             |
+|-------------------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1                             | 1      | Unknown - it's always 0                                                                                                                             |
+| 2 to 5                        | 4      | Channel: 1 = '1000' 2 = '1111'                                                                                                                      |
+| 6 to 9                        | 4      | Mode: beep    = '0100' light   = '1000' shock   = '0001' vibrate = '0010'                                                                           |
+| 10 to 25                      | 16     | Unknown - it's always 1000000011100110                                                                                                              |
+| 26 to 33                      | 8      | Power setting - binary representation of a decimal  from 0 to 100 for shock mode and vibrate mode. For light and beep mode, it's always '00000000'. |
+| 34 to 37                      | 4      | Mode: beep    = '1101' light   = '1110' shock   = '0111' vibrate = '1011'                                                                           |
+| 38 to 41                      | 4      | Channel: 1 = '1110' 2 = '0000'                                                                                                                      |
+
+Again, the above took a fair bit of staring at a screen before it started to make sense. 
+
+Was it **truly** needed for this project? No... but I wanted to try to decode as much as I could. Could further decoding be made? Sure, probably... who knows what bits 10 to 25 really mean? not me. But, its enough to work.
+
+## Transmitting the Signal
+
+From the **Interpretation** step of analyzing the signal with URH, we determined that the appropriate bit length was "200", meaning that each bit was represented by a 200us (microsecond) consecutive period of a positive or negative amplitude (since we were using ASK modulation).
+
+We also know that our remote uses a simple NRZ transmission protocol, meaning that each 1 and 0 is transmitted for the same duration. 
+
+In other words, to send a 1 or 0, we simply need to apply a voltage or apply no voltage, respectively, to our 433 Mhz transmitter for 200us.
+
+The [transmit.py](./transmit.py) script takes an input of channel, mode, and power, converts that to the decoded 41-bit string, then passes it through our encoding algorithm (i.e. add carrier signal of "01", expand 0 to 000 and 1 to 111, and add 11111111 to the beginning of the string) to arrive at our 213 bit encoded message. 
+
+The script then either applies a voltage of 3.3V or 0V to the data pin of the RF transmitter for 200us for each 1 or 0, respectively, that must be sent.
