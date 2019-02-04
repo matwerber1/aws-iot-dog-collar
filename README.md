@@ -76,7 +76,13 @@ First things first, I started URH up, chose **Record Signal**, set the collar re
 
 ![Recording signal with URH](./images/urh-record.png)
 
-Each set of two to three adjacent black bars corresponded with each of the different power settings I transmitted on the remote, since a single button on the remote sends a burst of two to three identical messages.
+Each set of two to three adjacent black bars corresponded with a repeated transmission for each of the different power settings I transmitted on the remote. A single button on the remote sends a repeating burst of the same signal... therefore, the number of adjacent bars varies somewhat depending on the total time I held the button for each press.
+
+To help understand what's going on, it is important to point out that a "single" black bar above is actually a many smaller analog signals that, when zoomed out, appear as one bar. For example, when zoomed in, a single bar above looks like the image below: 
+
+![Zoomed in recorded signal](./images/urh-record-02.png)
+
+The whole point of the above section is to show that "size is relative". Is the single black bar I'm looking at 5 signals of 100us each (e.g. 11111) or is it one signal of 500us (e.g. 1)? the answer depends on how the device manufacturer chose to encode their signal... but you can likely answer that question from the built-in URH autodetect features or by zooming in on the sample and measuring the narrowest distance between two peaks.
 
 ### Interpretating the Signal
 
