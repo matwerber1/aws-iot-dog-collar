@@ -12,13 +12,13 @@ When the AWS DeepLens detects bad behavior it instructs a nearby Raspberry Pi ("
 
 ## Status
 
-### In Process
+### Complete
 
 * Decode RF signals from dog collar remote
+* transmit decoded signals with Pi and confirm collar responds as expected
 
 ### Next Steps
 
-* Successfully transmit decoded signals, confirm they trigger the collar
 * Build AWS Lambda + Greengrass solution on pi to transit signals to collar when triggered via MQTT topic on AWS IoT Core
 * Build and train ML model with AWS SageMaker to detect dog on couch
 * Deploy model to AWS DeepLens
@@ -205,8 +205,7 @@ Was it **truly** needed for this project? No... but I wanted to try to decode as
 
 ## Transmitting the Signal
 
-From the **Interpretation** step of analyzing the signal with URH, we determined that the appropriate bit length was "200", meaning that each bit was represented by a 200us (microsecond) consecutive period of a positive or negative amplitude (since we were using ASK modulation).
-
+From the **Interpretation** step of analyzing the signal with URH, we determined that the appropriate bit length was "200", meaning that each bit was represented by a 200us (microsecond) consecutive period of a positive or negative amplitude (since we were using ASK modulation)
 We also know that our remote uses a simple NRZ transmission protocol, meaning that each 1 and 0 is transmitted for the same duration. 
 
 In other words, to send a 1 or 0, we simply need to apply a voltage or apply no voltage, respectively, to our 433 Mhz transmitter for 200us.
