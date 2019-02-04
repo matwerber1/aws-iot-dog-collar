@@ -123,6 +123,12 @@ When I switch the encoding to Manchester I, notice that the error rate jumps up 
 
 ![Analyzing the signal with URH (04)](./images/urh-analyze-04.png)
 
+It's **critical** to understand that if you're seeing a non-zero error percentage, the culprit is 1 or more of 3 different causes:
+
+1. Random error / interference / noise in signal (infrequent)
+2. Incorrect **interpretation** settings (e.g. wrong bit length or demodulation mode, which are key)
+3. Incorrect **analysis** decode settings (e.g. Manchester instead of NRZ)
+
 If you have the right settings, your error rate should be very low. With me, my error rate was always 0%, but I say "very low" simply because I haven't tested other devices and I imagine its possible some devices/messages/encoding might be subject to occasional error or random interference.
 
 ### Signal Deep Dive
