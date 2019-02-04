@@ -86,7 +86,7 @@ The whole point of the above section is to show that "size is relative". Is the 
 
 ### Interpretating the Signal
 
-The nest step is to move to the **Interpretation** window in URH. Here, you can edit various settings to tell URH how your 1s and 0s are encoded in the signal. Refer to online docs & videos for detail. I found that setting the modulation to ASK and clicking Autodetect was all that was needed. (Note, later analysis is what really gave me confidence that autodetect was correct):
+The next step is to move to the **Interpretation** window in URH. Here, you can edit various settings to tell URH how your 1s and 0s are encoded in the signal. Refer to online docs & videos for detail. I found that setting the modulation to ASK and clicking Autodetect was all that was needed. (Note, later analysis is what really gave me confidence that autodetect was correct):
 
 ![Interpreting the signal with URH](./images/urh-interpret.png)
 
@@ -236,4 +236,4 @@ python transmit.py --channel 1 --mode 'shock' --power 100
 
 I want to point out... the screenshot above shows power level 100 which had an **audible** sound during testing...
 
-I also tested power level 1, which had no sound, on my leg... and it definitely kind of hurt. Nothing terrible, but it was more intense than say a 9V battery touched to the tongue. Suffice to say, I will **not** be using the shock mode on my doggo. We will ne sticking to beep and/or vibrate mode.
+I also tested power level 1, which had no sound, on my leg... and it definitely kind of hurt. Nothing terrible, but it was more intense than say a 9V battery touched to the tongue. Suffice to say, I will **not** be using the shock mode on my doggo. We will be sticking to beep and/or vibrate mode.
