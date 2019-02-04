@@ -106,7 +106,7 @@ The other key setting that determines the grid content is the **Configure Decodi
 
 ![Analyzing the signal with URH (01)](./images/urh-analyze-02.png)
 
-In simple terms, your decoding method (if any) translates raw patterns of  1s and 0s from your captured signal into 1s and 0s that represent your intended message. For example, perhaps your device only sends raw signals of 000 and 111, but these actually represent 0 and 1, respectively. The encoded message would contains 000s and 111s, and decoding it would yield 0s and 1s. For example, a raw encoded message of 000111000111 would really mean 0101 after decoding.
+In simple terms, your decoding method (if any) translates raw patterns of  1s and 0s from your captured signal into 1s and 0s that represent your intended message. For example, perhaps your device only sends raw signals of 000 and 111, but these actually represent 0 and 1, respectively. The encoded raw message received straight from the receiver would contains 000s and 111s, and decoding it would yield 0s and 1s. For example, a raw encoded message of 000111000111 would really mean 0101 after decoding.
 
 I do not know enough about RF to be able to explain different encoding types and the reasons for their use. If you are curious, here are some starter articles:
 
