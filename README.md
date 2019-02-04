@@ -135,7 +135,7 @@ If you have the right settings, your error rate should be very low. With me, my 
 
 I'll save you some reading and say that if I re-transmit the NRZ-decoded signals with my Pi, they work and activate the collar.
 
-This section talks about further analysis of the signal. Specifically, figuring out what each section of those 213-character bit strings means so that I can programmatically generate codes rather than have to record every possible button press and embed within a script. Now, if I had a simple device that only had a few possible combinations, that wouldn't be a problem... but since this remote has 2 channels, 4 modes, and 0 to 100 power settings (for two modes), it has approximately ~400 different code combinations.
+This section talks about further analysis of the signal. Specifically, figuring out what each section of those 213-character bit strings means so that I can programmatically generate codes rather than have to record every possible button press and embed within a script. Now, if I had a simple device that only had a few possible combinations, it would be easy to hardcode these combinations into a transmission script... but since this remote has 2 channels, 4 modes, and 0 to 100 power settings (for two modes), it has approximately ~400 different code combinations and I'd rather have a dynamically-generated code instead of ~400 hard-coded constants.
 
 First things first, I looked at the raw 213-character codes for Channel 1, Shock Mode, for each power setting 0 to 100.
 
