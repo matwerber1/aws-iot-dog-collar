@@ -217,3 +217,13 @@ In other words, to send a 1 or 0, we simply need to apply a voltage or apply no 
 The [transmit.py](./transmit.py) script takes an input of channel, mode, and power, converts that to the decoded 41-bit string, then passes it through our encoding algorithm (i.e. add carrier signal of "01", expand 0 to 000 and 1 to 111, and add 11111111 to the beginning of the string) to arrive at our 213 bit encoded message.
 
 The script then either applies a voltage of 3.3V or 0V to the data pin of the RF transmitter for 200us for each 1 or 0, respectively, that must be sent.
+
+### Examples
+
+```sh
+python transmit.py --channel 1 --mode 'shock' --power 100
+```
+
+**\#Winning:**
+
+![Transmitting signal](./images/urh-transmit.jpg)
