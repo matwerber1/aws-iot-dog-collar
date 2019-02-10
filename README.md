@@ -240,7 +240,7 @@ We also know that our remote uses a simple NRZ transmission protocol, meaning th
 
 In other words, to send a 1 or 0, we simply need to apply a voltage or apply no voltage, respectively, to our 433 Mhz transmitter for 200us.
 
-The [transmit.py](./transmit.py) script takes an input of channel, mode, and power, converts that to the decoded 41-bit string, then passes it through our encoding algorithm (i.e. add carrier signal of "01", expand 0 to 000 and 1 to 111, and add 11111111 to the beginning of the string) to arrive at our 213 bit encoded message.
+The [transmit.py](./pi-scripts/transmit.py) script takes an input of channel, mode, and power, converts that to the decoded 41-bit string, then passes it through our encoding algorithm (i.e. add carrier signal of "01", expand 0 to 000 and 1 to 111, and add 11111111 to the beginning of the string) to arrive at our 213 bit encoded message.
 
 The script then either applies a voltage of 3.3V or 0V to the data pin of the RF transmitter for 200us for each 1 or 0, respectively, that must be sent.
 
@@ -260,10 +260,10 @@ I also tested power level 1, which had no sound, on my leg... and it definitely 
 
 ## Greengrass Deployment
 
-Greengrass is software that we deploy to our Rasperry Pi that allows us to easily interact with AWS cloud services. In our case, Greengrass will allow us to reliably send MQTT messages to our Pi to trigger the RF transmitter.
+Greengrass is an AWS service with supporting client-side "Greengrass Core" software that we deploy to our Rasperry Pi that allows us to easily interact with AWS cloud services. In our case, Greengrass will allow us to reliably send MQTT messages to our Pi to trigger the RF transmitter.
 
 AWS does not yet provide CloudFormation support for Greengrass, so we will use [GrassFormation](https://github.com/Neosperience/GrassFormation), a 3rd-party solution that offers similar capability.
 
 ### Lambda Function to Transmit RF Signals
 
-With minimal modification, we are able to port our native [transmit.py](./transmit.py) to an AWS Lambda function ([function.py](./aws/greengrass/lambda/rf-transmitter/function.py)). We will use Greengrass to deploy this Lambda to our Pi and configure the Lambda to be invoked when AWS IoT Core receives messages published to the **dog_collar/transmit** MQTT topic. 
+With minimal modification, we are able to port our native [transmit.py](./pi-scripts/transmit.py) to an AWS Lambda function ([function.py](./aws/greengrass/lambda/rf-transmitter/function.py)). We will use Greengrass to deploy this Lambda to our Pi and configure the Lambda to be invoked when AWS IoT Core receives messages published to the **dog_collar/transmit** MQTT topic. 
