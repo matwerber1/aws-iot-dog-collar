@@ -1,3 +1,7 @@
+# ignore your user-specific build-artifacts
+aws/build/*
+local_backup/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
