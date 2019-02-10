@@ -195,7 +195,9 @@ publish_device_cert_to_aws_iot() {
         -q 1                                                    \
         -t foo/bar                                              \
         -I anyclientID                                          \
-        --tls-version tlsv1.2 -m "Hello" -d                     
+        --tls-version tlsv1.2                                   \
+        -m "Hello"                                              \
+        -d                                      
 
 }
 

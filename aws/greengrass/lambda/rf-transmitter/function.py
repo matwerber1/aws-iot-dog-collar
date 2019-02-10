@@ -1,10 +1,24 @@
+import greengrasssdk
+import platform
+from threading import Timer
 import time
-import sys
 import RPi.GPIO as GPIO
 from numpy import binary_repr
-import argparse
+import sys
+import logging
+
+# initialize the logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Creating a greengrass core sdk client
+client = greengrasssdk.client('iot-data')
+
+# Retrieving platform information to send from Greengrass Core
+my_platform = platform.platform()
 
 def get_byte_1(channel, mode):
+
     mode_codes = {
         'beep':    '0100',
         'light':   '1000',
@@ -25,13 +39,15 @@ def get_byte_3():
     return '11100110'
 
 def get_byte_4(power, mode):
+
     if mode in ['shock', 'vibrate']:
-        return binary_repr(power, 8)
+        return binary_repr(int(power), 8)
     else:
         # byte4 is power and is not applicable unless mode is shock or vibrate
         return '00000000'
 
 def get_byte_5(channel, mode):
+
     mode_codes = {
         'beep':    '1101',
         'light':   '1110',
@@ -45,7 +61,7 @@ def get_byte_5(channel, mode):
     byte5 = mode_codes[mode] + channel_codes[channel]
     return byte5
 
-def get_command_message(channel, mode, power):    
+def get_raw_command(channel, mode, power):    
 
     byte_1 = get_byte_1(channel, mode)
     byte_2 = get_byte_2()
@@ -53,12 +69,11 @@ def get_command_message(channel, mode, power):
     byte_4 = get_byte_4(power, mode)
     byte_5 = get_byte_5(channel, mode)
 
-    #message = "{} {} {} {} {}".format(byte_1, byte_2, byte_3, byte_4, byte_5)
     message = byte_1 + byte_2 + byte_3 + byte_4 + byte_5
 
     return message 
 
-def get_encoded_message(message):
+def add_encoding(message):
 
     CARRIER_SIGNAL = '01'
     encoded_message = ''
@@ -74,12 +89,11 @@ def get_encoded_message(message):
     return encoded_message
 
 def get_encoded_command(channel, mode, power): 
-    # all messages start with this preamble
-    PREAMBLE = '1111111100001'
-    raw_command = get_command_message(channel, mode, power)    
-    encoded_command = get_encoded_message(raw_command)
-    full_encoded_message = PREAMBLE + encoded_command
-    return full_encoded_message
+
+    PREAMBLE             = '1111111100001'
+    raw_command          = get_raw_command(channel, mode, power)    
+    encoded_command      = PREAMBLE + add_encoding(raw_command)
+    return encoded_command
 
 def transmit_code(pin, code):
     
@@ -111,24 +125,20 @@ def transmit_code(pin, code):
         time.sleep(extended_delay)
     GPIO.cleanup()
 
-def main():
+def lambda_handler(event, context):
+
+    logger.info(event)
+
+    channel = event["channel"]
+    mode    = event["mode"]
+    power   = event["power"]
     
-    parser = argparse.ArgumentParser(description='Test DynamoDB query API speed.')
-    parser.add_argument('--channel', type=str, required=True, help='channel to transmit [0,1]')
-    parser.add_argument('--mode',    type=str, required=True, help='collar mode [beep,shock,vibrate,light]')
-    parser.add_argument('--power',   type=int, default=20,    help='power [0 to 100] (only for shock or vibrate mode)')
-    parser.add_argument('--pin',     type=int, default=17,    help='GPIO pin to transmit code on Raspberri Pi')
-    args = parser.parse_args()
-    
-    channel      = args.channel
-    mode         = args.mode
-    power        = args.power
-    transmit_pin = args.pin
+    TRANSMIT_PIN = 17
     
     encoded_command = get_encoded_command(channel, mode, power)
-    print("\nMessage for channel {}, mode {}, power {}:\n{}\n".format(channel, mode, power, encoded_command))
-    
-    transmit_code(transmit_pin, encoded_command)
-    
-if __name__ == "__main__":
-   main()
+    msg = "\nTransmitting channel {}, mode {}, power {}:\n{}\n".format(channel, mode, power, encoded_command)
+    client.publish(topic='dog_collar', payload=msg)
+    transmit_code(TRANSMIT_PIN, encoded_command)
+    client.publish(topic='dog_collar', payload='transmission complete.')
+
+    return

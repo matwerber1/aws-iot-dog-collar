@@ -257,3 +257,13 @@ python transmit.py --channel 1 --mode 'shock' --power 100
 I want to point out... the screenshot above shows power level 100 which had an **audible** sound during testing...
 
 I also tested power level 1, which had no sound, on my leg... and it definitely kind of hurt. Nothing terrible, but it was more intense than say a 9V battery touched to the tongue. Suffice to say, I will **not** be using the shock mode on my doggo. We will be sticking to beep and/or vibrate mode.
+
+## Greengrass Deployment
+
+Greengrass is software that we deploy to our Rasperry Pi that allows us to easily interact with AWS cloud services. In our case, Greengrass will allow us to reliably send MQTT messages to our Pi to trigger the RF transmitter.
+
+AWS does not yet provide CloudFormation support for Greengrass, so we will use [GrassFormation](https://github.com/Neosperience/GrassFormation), a 3rd-party solution that offers similar capability.
+
+### Lambda Function to Transmit RF Signals
+
+With minimal modification, we are able to port our native [transmit.py](./transmit.py) to an AWS Lambda function ([function.py](./aws/greengrass/lambda/rf-transmitter/function.py)). We will use Greengrass to deploy this Lambda to our Pi and configure the Lambda to be invoked when AWS IoT Core receives messages published to the **dog_collar/transmit** MQTT topic. 

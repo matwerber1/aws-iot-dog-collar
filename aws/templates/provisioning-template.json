@@ -15,9 +15,7 @@
                     \"ThingName\" : {
                         \"Ref\" : \"AWS::IoT::Certificate::Id\"
                     }, 
-                    \"ThingTypeName\" : {
-                        \"Ref\" : \"<THING_TYPE_NAME>\"
-                    }, 
+                    \"ThingTypeName\" : \"<THING_TYPE_NAME>\", 
                     \"AttributePayload\" : { 
                         \"version\" : \"v1\", 
                         \"country\" : {
